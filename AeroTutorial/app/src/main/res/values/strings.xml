@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">AeroSafe</string>
+
+    <!-- Common -->
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="logout">Logout</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="submit">Submit</string>
+    <string name="field_required">This field is required</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+
+    <!-- Dashboard -->
+    <string name="current_aqi">Current AQI</string>
+    <string name="predicted_aqi">Predicted AQI</string>
+    <string name="search_location">Search Location</string>
+    <string name="report_issue">Report Issue</string>
+    <string name="view_alerts">View Alerts</string>
+    <string name="search_history">Search History</string>
+    <string name="preventive_measures">Preventive Measures</string>
+
+    <!-- Researcher -->
+    <string name="pollutant_data">Pollutant Data</string>
+    <string name="research_hub">Research Data Hub</string>
+    <string name="save_data">Save to Research Hub</string>
+    <string name="export_data">Export Data</string>
+    <string name="researchers_network">Researchers Network</string>
+    <string name="publications">Publications</string>
+
+    <!-- Admin -->
+    <string name="user_management">User Management</string>
+    <string name="reports_dashboard">Reports Dashboard</string>
+    <string name="alerts_management">Alerts Management</string>
+    <string name="policy_data">Policy Data</string>
+    <string name="create_alert">Create Alert</string>
+    <string name="resolve_report">Resolve Report</string>
+    <string name="view_statistics">View Statistics</string>
+
+    <!-- Report -->
+    <string name="reporter_name">Reporter Name</string>
+    <string name="location">Location</string>
+    <string name="issue_type">Issue Type</string>
+    <string name="severity">Severity</string>
+    <string name="description">Description</string>
+    <string name="contact_info">Contact Information</string>
+
+    <!-- AQI Categories -->
+    <string name="aqi_good">Good</string>
+    <string name="aqi_moderate">Moderate</string>
+    <string name="aqi_unhealthy_sensitive">Unhealthy for Sensitive Groups</string>
+    <string name="aqi_unhealthy">Unhealthy</string>
+    <string name="aqi_very_unhealthy">Very Unhealthy</string>
+    <string name="aqi_hazardous">Hazardous</string>
+</resources>
+
