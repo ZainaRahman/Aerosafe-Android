@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "630961771418",
+    "firebase_url": "https://aerosafe-5d610-default-rtdb.firebaseio.com",
+    "project_id": "aerosafe-5d610",
+    "storage_bucket": "aerosafe-5d610.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:630961771418:android:53074be752969626146023",
+        "android_client_info": {
+          "package_name": "com.example.aerotutorial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcfTah90gce8QFBlzOMDCVcKh_p8yOvfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
