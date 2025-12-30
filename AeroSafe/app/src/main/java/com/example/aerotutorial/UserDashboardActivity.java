@@ -139,7 +139,12 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
     private void fetchAQIData() {
         progressBar.setVisibility(View.VISIBLE);
 
-        String apiKey = prefsManager.getApiKey().isEmpty() ? "YOUR_API_KEY" : prefsManager.getApiKey();
+        // Use the working API key from AQIRepository instead of placeholder
+        String apiKey = prefsManager.getApiKey();
+        if (apiKey.isEmpty() || apiKey.equals("YOUR_API_KEY")) {
+            // Use the working API key from AQIRepository as fallback
+            apiKey = "98e192f418b2437e52cb54df708958f9";
+        }
 
         RetrofitClient.getOpenWeatherApi()
             .getAirPollution(selectedLat, selectedLon, apiKey)

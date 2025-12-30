@@ -148,8 +148,8 @@ public class SignupActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 btnSignup.setEnabled(true);
 
-                // Show detailed error message
-                String errorMessage = "Signup failed: " + error;
+                // Show detailed error message with helpful hints
+                String errorMessage = parseFirebaseError(error);
                 Toast.makeText(SignupActivity.this, errorMessage, Toast.LENGTH_LONG).show();
 
                 // Log to help debug
@@ -190,6 +190,35 @@ public class SignupActivity extends AppCompatActivity {
 
         startActivity(intent);
         finish();
+    }
+
+    private String parseFirebaseError(String error) {
+        if (error == null) {
+            return "Signup failed. Please try again.";
+        }
+
+        // Convert error to lowercase for easier matching
+        String lowerError = error.toLowerCase();
+
+        if (lowerError.contains("internal error") ||
+            lowerError.contains("not authorized") ||
+            lowerError.contains("android client")) {
+            return "⚠️ Setup Issue: Please contact the app administrator.\n\n" +
+                   "The app needs to be configured with your device certificate in Firebase Console.\n\n" +
+                   "Technical error: " + error;
+        } else if (lowerError.contains("email") && lowerError.contains("already")) {
+            return "This email is already registered. Try logging in instead.";
+        } else if (lowerError.contains("weak password")) {
+            return "Password is too weak. Use at least 6 characters with letters and numbers.";
+        } else if (lowerError.contains("invalid email")) {
+            return "Invalid email address. Please check and try again.";
+        } else if (lowerError.contains("network")) {
+            return "Network error. Please check your internet connection.";
+        } else if (lowerError.contains("permission")) {
+            return "Permission denied. Please contact the app administrator.";
+        } else {
+            return "Signup failed: " + error;
+        }
     }
 }
 

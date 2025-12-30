@@ -11,6 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.aerotutorial.databinding.ActivityLoginBinding;
 import com.example.aerotutorial.models.User;
 import com.example.aerotutorial.repository.AuthRepository;
+import com.example.aerotutorial.utils.AQIErrorDiagnostic;
+import com.example.aerotutorial.utils.FirebaseAuthDiagnostics;
+import com.example.aerotutorial.utils.FirebaseAuthEmergencyTester;
+import com.example.aerotutorial.utils.FirebaseConfigValidator;
+import com.example.aerotutorial.utils.FirebaseInternalErrorDiagnostic;
+import com.example.aerotutorial.utils.PostFixVerificationTest;
 import com.example.aerotutorial.utils.PreferencesManager;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -28,6 +34,25 @@ public class LoginActivity extends AppCompatActivity {
 
         authRepository = new AuthRepository();
         prefsManager = new PreferencesManager(this);
+
+        // 🚨 COMPREHENSIVE FIREBASE DIAGNOSTICS
+        FirebaseConfigValidator.validateConfiguration();
+        FirebaseConfigValidator.validateExpectedConfiguration();
+
+        // 🧪 POST-FIX VERIFICATION: Test if SHA1 fix resolved the internal error
+        PostFixVerificationTest postFixTest = new PostFixVerificationTest(this);
+        postFixTest.testFixVerification();
+
+        // 🌍 AQI API DIAGNOSTIC: Test if AQI API is working
+        AQIErrorDiagnostic aqiDiagnostic = new AQIErrorDiagnostic(this);
+        aqiDiagnostic.diagnoseAQIError();
+
+        FirebaseAuthDiagnostics.runDiagnostics();
+        FirebaseAuthEmergencyTester emergencyTester = new FirebaseAuthEmergencyTester(this);
+        emergencyTester.runEmergencyTests();
+
+        FirebaseInternalErrorDiagnostic internalDiag = new FirebaseInternalErrorDiagnostic(this);
+        internalDiag.runInternalErrorDiagnostics();
 
         // Check if user is already logged in
         FirebaseUser currentUser = authRepository.getCurrentUser();
@@ -48,6 +73,13 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         binding.tvForgotPassword.setOnClickListener(v -> resetPassword());
+
+        // 🚨 EMERGENCY: Add long-click test for Firebase auth
+        binding.btnLogin.setOnLongClickListener(v -> {
+            FirebaseAuthEmergencyTester tester = new FirebaseAuthEmergencyTester(this);
+            tester.runEmergencyTests();
+            return true;
+        });
     }
 
     private void loginUser() {
