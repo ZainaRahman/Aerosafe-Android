@@ -37,7 +37,7 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        // Check Firebase initialization
+
         try {
             authRepository = new AuthRepository();
             prefsManager = new PreferencesManager(this);
@@ -78,7 +78,7 @@ public class SignupActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         String location = etLocation.getText().toString().trim();
 
-        // Validate inputs
+
         if (TextUtils.isEmpty(username)) {
             etUsername.setError("Username is required");
             etUsername.requestFocus();
@@ -115,10 +115,10 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // Get selected role
+
         String role = getSelectedRole();
 
-        // Show loading
+
         progressBar.setVisibility(View.VISIBLE);
         btnSignup.setEnabled(false);
 
@@ -129,16 +129,16 @@ public class SignupActivity extends AppCompatActivity {
                 Log.d(TAG, "Signup successful for user: " + user.getEmail());
                 progressBar.setVisibility(View.GONE);
 
-                // Update user with location
+
                 user.setLocation(location);
 
-                // Save user info to preferences
+
                 prefsManager.saveUserInfo(user.getId(), role, username, email, location);
 
                 Toast.makeText(SignupActivity.this,
                     "Account created successfully!", Toast.LENGTH_SHORT).show();
 
-                // Navigate to appropriate dashboard
+
                 navigateToDashboard(role);
             }
 
@@ -148,11 +148,11 @@ public class SignupActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 btnSignup.setEnabled(true);
 
-                // Show detailed error message with helpful hints
+
                 String errorMessage = parseFirebaseError(error);
                 Toast.makeText(SignupActivity.this, errorMessage, Toast.LENGTH_LONG).show();
 
-                // Log to help debug
+
                 Log.e(TAG, "Full error details: " + error);
             }
         });
@@ -197,7 +197,7 @@ public class SignupActivity extends AppCompatActivity {
             return "Signup failed. Please try again.";
         }
 
-        // Convert error to lowercase for easier matching
+
         String lowerError = error.toLowerCase();
 
         if (lowerError.contains("internal error") ||

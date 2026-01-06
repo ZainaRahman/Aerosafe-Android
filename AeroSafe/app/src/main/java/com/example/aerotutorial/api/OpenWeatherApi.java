@@ -11,7 +11,7 @@ import retrofit2.http.Query;
 
 public interface OpenWeatherApi {
 
-    // Air Pollution API
+
     @GET("data/2.5/air_pollution")
     Call<AirPollutionResponse> getAirPollution(
             @Query("lat") double latitude,
@@ -19,7 +19,7 @@ public interface OpenWeatherApi {
             @Query("appid") String apiKey
     );
 
-    // Historical Air Pollution API (last 7 days)
+
     @GET("data/2.5/air_pollution/history")
     Call<AirPollutionResponse> getHistoricalAirPollution(
             @Query("lat") double latitude,
@@ -29,7 +29,7 @@ public interface OpenWeatherApi {
             @Query("appid") String apiKey
     );
 
-    // Geocoding API - Get coordinates from city name
+
     @GET("geo/1.0/direct")
     Call<List<GeocodingResponse>> geocodeLocation(
             @Query("q") String cityName,
@@ -37,7 +37,7 @@ public interface OpenWeatherApi {
             @Query("appid") String apiKey
     );
 
-    // Reverse Geocoding API - Get city name from coordinates
+    // Reverse Geocoding API -  city name from coordinates
     @GET("geo/1.0/reverse")
     Call<List<GeocodingResponse>> reverseGeocode(
             @Query("lat") double latitude,

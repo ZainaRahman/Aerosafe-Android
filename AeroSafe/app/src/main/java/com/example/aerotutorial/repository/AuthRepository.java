@@ -23,13 +23,13 @@ public class AuthRepository {
         this.databaseReference = FirebaseDatabase.getInstance().getReference();
     }
 
-    // Callback interfaces
+
     public interface AuthCallback {
         void onSuccess(User user);
         void onFailure(String error);
     }
 
-    // Sign up with callback
+
     public void signUp(String email, String password, String username, String role, AuthCallback callback) {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener(authResult -> {
@@ -49,7 +49,7 @@ public class AuthRepository {
             .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
-    // Sign in with callback
+
     public void signIn(String email, String password, AuthCallback callback) {
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener(authResult -> {
@@ -74,12 +74,12 @@ public class AuthRepository {
             .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
-    // Reset password with callback
+
     public void resetPassword(String email, OnCompleteListener<Void> listener) {
         firebaseAuth.sendPasswordResetEmail(email).addOnCompleteListener(listener);
     }
 
-    // Legacy methods for backward compatibility
+
     public Task<AuthResult> signUp(String email, String password) {
         return firebaseAuth.createUserWithEmailAndPassword(email, password);
     }

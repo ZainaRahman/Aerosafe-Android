@@ -44,20 +44,20 @@ public class ResearchDataAdapter extends RecyclerView.Adapter<ResearchDataAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         AirQualityData data = dataList.get(position);
 
-        // Format timestamp
+
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
         String timestamp = sdf.format(new Date(data.getTimestamp()));
         holder.tvTimestamp.setText(timestamp);
 
-        // Location
+
         holder.tvLocation.setText("📍 " + data.getLocation());
 
-        // AQI with color
+
         holder.tvAQI.setText("AQI: " + data.getAqi());
         int aqiColor = AQICalculator.getAQIColor(data.getAqi());
         holder.tvAQI.setBackgroundColor(aqiColor);
 
-        // Pollutant values
+
         holder.tvPM25.setText(String.format(Locale.getDefault(), "%.2f", data.getPm25()));
         holder.tvPM10.setText(String.format(Locale.getDefault(), "%.2f", data.getPm10()));
         holder.tvNO2.setText(String.format(Locale.getDefault(), "%.2f", data.getNo2()));
@@ -65,7 +65,7 @@ public class ResearchDataAdapter extends RecyclerView.Adapter<ResearchDataAdapte
         holder.tvSO2.setText(String.format(Locale.getDefault(), "%.2f", data.getSo2()));
         holder.tvCO.setText(String.format(Locale.getDefault(), "%.2f", data.getCo()));
 
-        // Delete button
+
         holder.btnDelete.setOnClickListener(v -> {
             if (deleteListener != null) {
                 deleteListener.onDelete(data);

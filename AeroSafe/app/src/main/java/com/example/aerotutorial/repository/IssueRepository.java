@@ -35,7 +35,7 @@ public class IssueRepository {
         void onFailure(String error);
     }
 
-    // Submit a new issue
+
     public void submitIssue(Issue issue, IssueCallback callback) {
         String issueId = databaseReference.push().getKey();
         if (issueId != null) {
@@ -73,7 +73,7 @@ public class IssueRepository {
         }
     }
 
-    // Get user's issues
+
     public void getUserIssues(String userId, IssueListCallback callback) {
         Query query = databaseReference.orderByChild("userId").equalTo(userId);
 
@@ -88,7 +88,7 @@ public class IssueRepository {
                         issues.add(issue);
                     }
                 }
-                // Sort by createdAt descending
+
                 issues.sort((i1, i2) -> Long.compare(i2.getCreatedAt(), i1.getCreatedAt()));
                 callback.onSuccess(issues);
             }
@@ -101,7 +101,7 @@ public class IssueRepository {
         });
     }
 
-    // Get all issues (for admin/researcher)
+
     public void getAllIssues(IssueListCallback callback) {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -114,7 +114,7 @@ public class IssueRepository {
                         issues.add(issue);
                     }
                 }
-                // Sort by createdAt descending
+
                 issues.sort((i1, i2) -> Long.compare(i2.getCreatedAt(), i1.getCreatedAt()));
                 callback.onSuccess(issues);
             }
@@ -127,7 +127,7 @@ public class IssueRepository {
         });
     }
 
-    // Get issues by status
+
     public void getIssuesByStatus(String status, IssueListCallback callback) {
         Query query = databaseReference.orderByChild("status").equalTo(status);
 
@@ -142,7 +142,7 @@ public class IssueRepository {
                         issues.add(issue);
                     }
                 }
-                // Sort by createdAt descending
+
                 issues.sort((i1, i2) -> Long.compare(i2.getCreatedAt(), i1.getCreatedAt()));
                 callback.onSuccess(issues);
             }
@@ -155,7 +155,7 @@ public class IssueRepository {
         });
     }
 
-    // Update issue status
+
     public void updateIssueStatus(String issueId, String newStatus, IssueCallback callback) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("status", newStatus);
@@ -172,7 +172,7 @@ public class IssueRepository {
             });
     }
 
-    // Add admin response
+
     public void addAdminResponse(String issueId, String response, IssueCallback callback) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("adminResponse", response);
@@ -189,7 +189,7 @@ public class IssueRepository {
             });
     }
 
-    // Get single issue
+
     public void getIssue(String issueId, IssueCallback callback) {
         databaseReference.child(issueId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -211,7 +211,7 @@ public class IssueRepository {
         });
     }
 
-    // Delete issue (admin only)
+
     public void deleteIssue(String issueId, IssueCallback callback) {
         databaseReference.child(issueId).removeValue()
             .addOnSuccessListener(aVoid -> {
@@ -224,17 +224,17 @@ public class IssueRepository {
             });
     }
 
-    // Get database reference (for real-time listeners if needed)
+
     public DatabaseReference getDatabaseReference() {
         return databaseReference;
     }
 
-    // Get issues query by user (for real-time updates)
+
     public Query getUserIssuesQuery(String userId) {
         return databaseReference.orderByChild("userId").equalTo(userId);
     }
 
-    // Get all issues query (for real-time updates)
+
     public DatabaseReference getAllIssuesQuery() {
         return databaseReference;
     }

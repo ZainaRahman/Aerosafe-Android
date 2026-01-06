@@ -6,10 +6,7 @@ import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 
-/**
- * Emergency Firebase Authentication Tester
- * Use this class to test and fix the "setup issue" error
- */
+
 public class FirebaseAuthEmergencyTester {
 
     private static final String TAG = "FirebaseEmergencyTest";
@@ -21,10 +18,7 @@ public class FirebaseAuthEmergencyTester {
         this.auth = FirebaseAuth.getInstance();
     }
 
-    /**
-     * Run comprehensive Firebase auth tests
-     * Call this from your LoginActivity onCreate
-     */
+
     public void runEmergencyTests() {
         Log.d(TAG, "🚨 RUNNING EMERGENCY FIREBASE AUTH TESTS 🚨");
 
@@ -151,9 +145,7 @@ public class FirebaseAuthEmergencyTester {
         }
     }
 
-    /**
-     * Test sign-in with existing account
-     */
+
     public void testSignIn(String email, String password) {
         Log.d(TAG, "Testing sign-in with: " + email);
 

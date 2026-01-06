@@ -53,7 +53,7 @@ public class AdminOverviewFragment extends Fragment {
     }
 
     private void loadStatistics() {
-        // Load total users
+
         authRepository.getUsersByRole("user").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -66,7 +66,7 @@ public class AdminOverviewFragment extends Fragment {
             }
         });
 
-        // Load total researchers
+
         authRepository.getUsersByRole("researcher").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -79,7 +79,7 @@ public class AdminOverviewFragment extends Fragment {
             }
         });
 
-        // Load total reports
+
         reportRepository.getAllReports().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -92,7 +92,7 @@ public class AdminOverviewFragment extends Fragment {
             }
         });
 
-        // Load active alerts
+
         alertRepository.getActiveAlerts().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

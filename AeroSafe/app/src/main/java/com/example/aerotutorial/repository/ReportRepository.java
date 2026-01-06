@@ -17,7 +17,7 @@ public class ReportRepository {
         this.databaseReference = FirebaseDatabase.getInstance().getReference().child("reports");
     }
 
-    // Submit a new report
+
     public Task<Void> submitReport(Report report) {
         String reportId = databaseReference.push().getKey();
         if (reportId != null) {
@@ -42,22 +42,22 @@ public class ReportRepository {
         return null;
     }
 
-    // Get all reports (for admin)
+
     public DatabaseReference getAllReports() {
         return databaseReference;
     }
 
-    // Get reports by status
+
     public Query getReportsByStatus(String status) {
         return databaseReference.orderByChild("status").equalTo(status);
     }
 
-    // Get reports by user
+
     public Query getReportsByReporter(String reporterId) {
         return databaseReference.orderByChild("reporterId").equalTo(reporterId);
     }
 
-    // Update report status
+
     public Task<Void> updateReportStatus(String reportId, String status, String resolvedBy, String notes) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("status", status);
@@ -68,7 +68,7 @@ public class ReportRepository {
         return databaseReference.child(reportId).updateChildren(updates);
     }
 
-    // Delete report
+
     public Task<Void> deleteReport(String reportId) {
         return databaseReference.child(reportId).removeValue();
     }

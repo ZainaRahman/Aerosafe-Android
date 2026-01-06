@@ -42,13 +42,13 @@ public class ReportIssueActivity extends AppCompatActivity {
         repository = new ReportRepository();
         prefsManager = new PreferencesManager(this);
 
-        // Pre-fill reporter name if available
+
         String userName = prefsManager.getUserName();
         if (!userName.isEmpty()) {
             etReporterName.setText(userName);
         }
 
-        // Pre-fill location if available
+
         String userLocation = prefsManager.getUserLocation();
         if (!userLocation.isEmpty()) {
             etLocation.setText(userLocation);
@@ -76,7 +76,7 @@ public class ReportIssueActivity extends AppCompatActivity {
     }
 
     private void setupDropdowns() {
-        // Issue types
+
         String[] issueTypes = {
             "High AQI / Poor Air Quality",
             "Industrial Pollution",
@@ -93,7 +93,7 @@ public class ReportIssueActivity extends AppCompatActivity {
         );
         actvIssueType.setAdapter(issueAdapter);
 
-        // Severity levels
+
         String[] severityLevels = {
             "Low - Minor concern",
             "Medium - Noticeable impact",
@@ -154,14 +154,14 @@ public class ReportIssueActivity extends AppCompatActivity {
             return;
         }
 
-        // Show loading
+
         progressBar.setVisibility(View.VISIBLE);
         btnSubmit.setEnabled(false);
 
-        // Get reporter ID
+
         String reporterId = prefsManager.getUserId();
 
-        // Create report object
+
         Report report = new Report(
             reporterName,
             reporterId,
@@ -173,7 +173,7 @@ public class ReportIssueActivity extends AppCompatActivity {
             contact.isEmpty() ? "Not provided" : contact
         );
 
-        // Submit to Firebase
+
         repository.submitReport(report)
             .addOnSuccessListener(aVoid -> {
                 progressBar.setVisibility(View.GONE);
@@ -183,7 +183,7 @@ public class ReportIssueActivity extends AppCompatActivity {
                 tvStatus.setText("✅ Report submitted successfully! Government officials will review your report.");
                 tvStatus.setTextColor(getColor(R.color.status_success));
 
-                // Close activity after 2 seconds
+
                 tvStatus.postDelayed(this::finish, 2000);
             })
             .addOnFailureListener(e -> {

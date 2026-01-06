@@ -6,12 +6,12 @@ public class User {
     private String email;
     private String password;
     private String location;
-    private String role; // "user", "researcher", "admin"
+    private String role;
     private long createdAt;
     private boolean active;
 
     public User() {
-        // Required empty constructor for Firebase Realtime Database
+
         this.active = true;
     }
 

@@ -12,10 +12,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 
-/**
- * Advanced Firebase Internal Error Diagnostics
- * Specifically designed to diagnose "internal error" issues
- */
+
 public class FirebaseInternalErrorDiagnostic {
 
     private static final String TAG = "FirebaseInternalDiag";

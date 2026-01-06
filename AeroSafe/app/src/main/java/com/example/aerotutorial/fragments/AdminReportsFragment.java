@@ -149,7 +149,7 @@ public class AdminReportsFragment extends Fragment {
     private void onReportAction(Report report, String action) {
         switch (action) {
             case "view":
-                // TODO: Show report details dialog
+
                 showReportDetails(report);
                 break;
             case "resolve":
@@ -162,7 +162,7 @@ public class AdminReportsFragment extends Fragment {
     }
 
     private void showReportDetails(Report report) {
-        // TODO: Implement dialog to show full report details
+
         Toast.makeText(requireContext(), "View report #" + report.getId(),
                       Toast.LENGTH_SHORT).show();
     }

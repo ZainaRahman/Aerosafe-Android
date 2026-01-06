@@ -16,7 +16,7 @@ public class AirQualityData {
     private String date;
 
     public AirQualityData() {
-        // Required empty constructor for Firestore
+
     }
 
     public AirQualityData(String location, double latitude, double longitude, int aqi,
@@ -34,7 +34,7 @@ public class AirQualityData {
         this.timestamp = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+
     public String getId() {
         return id;
     }

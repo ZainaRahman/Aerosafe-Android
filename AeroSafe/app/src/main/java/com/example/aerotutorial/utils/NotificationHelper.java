@@ -101,7 +101,7 @@ public class NotificationHelper {
     }
 
     public static void checkAndNotify(Context context, int aqi) {
-        // Notify if AQI is unhealthy or worse
+
         if (aqi >= 101) {
             NotificationHelper helper = new NotificationHelper(context);
             String category = AQICalculator.getAQICategory(aqi);

@@ -34,13 +34,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         User user = usersList.get(position);
 
-        // Username
+
         holder.tvUsername.setText(user.getUsername());
 
-        // Email
         holder.tvEmail.setText(user.getEmail());
 
-        // Location
+
         String location = user.getLocation();
         if (location != null && !location.isEmpty()) {
             holder.tvLocation.setText("📍 " + location);
@@ -48,7 +47,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
             holder.tvLocation.setText("📍 Location not set");
         }
 
-        // Role with color
+
         String role = user.getRole();
         holder.tvRole.setText(formatRole(role));
         holder.tvRole.setBackgroundColor(getRoleColor(role));

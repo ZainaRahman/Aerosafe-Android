@@ -109,7 +109,7 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
             fetchPollutantData();
         });
 
-        // Fetch initial data
+
         fetchPollutantData();
     }
 
@@ -120,7 +120,7 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
             return;
         }
 
-        // TODO: Implement geocoding search
+
         Toast.makeText(requireContext(), "Search: " + query, Toast.LENGTH_SHORT).show();
     }
 
@@ -129,7 +129,7 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
 
         String apiKey = prefsManager.getApiKey();
         if (apiKey.isEmpty()) {
-            apiKey = "YOUR_API_KEY"; // Fallback
+            apiKey = "YOUR_API_KEY";
         }
 
         RetrofitClient.getOpenWeatherApi()
@@ -171,7 +171,7 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
 
         tvSelectedLocation.setText("📍 " + selectedLocation);
 
-        // Calculate AQI
+
         int aqi = AQICalculator.calculateOverallAQI(
             components.getPm25(),
             components.getPm10(),
@@ -181,7 +181,7 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
             components.getCo()
         );
 
-        // Store current data
+
         currentData = new AirQualityData(
             selectedLocation,
             selectedLat,

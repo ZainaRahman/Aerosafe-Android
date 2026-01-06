@@ -28,7 +28,7 @@ public class LocationHelper {
             return;
         }
 
-        // Check permissions
+
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -37,11 +37,11 @@ public class LocationHelper {
             return;
         }
 
-        // Try to get last known location
+
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         if (location == null) {
-            // Try network provider
+
             location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         }
 

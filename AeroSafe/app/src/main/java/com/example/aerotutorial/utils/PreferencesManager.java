@@ -18,7 +18,7 @@ public class PreferencesManager {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    // API Key
+
     public void saveApiKey(String apiKey) {
         prefs.edit().putString(KEY_API_KEY, apiKey).apply();
     }

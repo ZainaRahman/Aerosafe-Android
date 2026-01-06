@@ -10,7 +10,7 @@ public class Prediction {
     private double confidence;
     private long predictionTimestamp;
 
-    // Required empty constructor for Firebase Realtime Database
+
     public Prediction() {
         this.predictionTimestamp = System.currentTimeMillis();
     }
@@ -22,7 +22,7 @@ public class Prediction {
         this.predictionTimestamp = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+
     public String getId() {
         return id;
     }

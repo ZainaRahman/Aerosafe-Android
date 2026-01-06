@@ -10,14 +10,14 @@ public class Report {
     private String aqiValue;
     private String description;
     private String contact;
-    private String status; // "Pending", "In Progress", "Resolved"
+    private String status;
     private long submittedDate;
     private String resolvedBy;
     private long resolvedDate;
     private String resolutionNotes;
 
     public Report() {
-        // Required empty constructor for Firestore
+
     }
 
     public Report(String reporterName, String reporterId, String location, String issueType,
@@ -34,7 +34,7 @@ public class Report {
         this.submittedDate = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+
     public String getId() {
         return id;
     }

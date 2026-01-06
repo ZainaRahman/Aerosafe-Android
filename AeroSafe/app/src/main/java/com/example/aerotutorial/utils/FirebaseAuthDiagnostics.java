@@ -4,10 +4,7 @@ import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
-/**
- * Firebase Authentication Diagnostics
- * Run this to check if Firebase is properly configured
- */
+
 public class FirebaseAuthDiagnostics {
 
     private static final String TAG = "FirebaseAuthDiag";
@@ -15,12 +12,12 @@ public class FirebaseAuthDiagnostics {
     public static void runDiagnostics() {
         Log.d(TAG, "=== FIREBASE AUTHENTICATION DIAGNOSTICS ===");
 
-        // Test 1: Check Firebase Auth instance
+
         try {
             FirebaseAuth auth = FirebaseAuth.getInstance();
             Log.d(TAG, "✅ FirebaseAuth instance created successfully");
 
-            // Get current auth state
+
             if (auth.getCurrentUser() != null) {
                 Log.d(TAG, "✅ User is currently signed in: " + auth.getCurrentUser().getEmail());
             } else {
@@ -31,7 +28,7 @@ public class FirebaseAuthDiagnostics {
             Log.e(TAG, "❌ FirebaseAuth initialization failed", e);
         }
 
-        // Test 2: Check Firebase Database instance
+
         try {
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             Log.d(TAG, "✅ FirebaseDatabase instance created successfully");
@@ -40,7 +37,7 @@ public class FirebaseAuthDiagnostics {
             Log.e(TAG, "❌ FirebaseDatabase initialization failed", e);
         }
 
-        // Test 3: Test email/password authentication availability
+
         testAuthenticationMethods();
 
         Log.d(TAG, "=== DIAGNOSTICS COMPLETE ===");
@@ -51,7 +48,7 @@ public class FirebaseAuthDiagnostics {
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        // Test if we can attempt to create a user (will fail but we can see the error)
+
         auth.createUserWithEmailAndPassword("test@example.com", "testpassword")
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {

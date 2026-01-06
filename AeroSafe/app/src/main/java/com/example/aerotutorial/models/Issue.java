@@ -9,14 +9,14 @@ public class Issue {
     private String location;
     private double latitude;
     private double longitude;
-    private String status; // "Pending", "In Progress", "Resolved", "Closed"
-    private String priority; // "Low", "Medium", "High", "Critical"
+    private String status;
+    private String priority;
     private String imageUrl;
     private String adminResponse;
     private long createdAt;
     private long updatedAt;
 
-    // Required empty constructor for Firebase Realtime Database
+
     public Issue() {
         this.status = "Pending";
         this.priority = "Medium";
@@ -39,7 +39,6 @@ public class Issue {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    // Getters and Setters
     public String getId() {
         return id;
     }

@@ -39,7 +39,7 @@ public class PredictionRepository {
         void onFailure(String error);
     }
 
-    // Generate prediction based on current AQI
+
     public void generatePrediction(String location, int currentAqi, int hoursAhead, String userId, PredictionCallback callback) {
         // Simple prediction algorithm (can be enhanced with ML model)
         int predictedAqi = calculatePrediction(currentAqi, hoursAhead);
@@ -47,9 +47,8 @@ public class PredictionRepository {
         Prediction prediction = new Prediction(location, predictedAqi, hoursAhead);
         prediction.setUserId(userId);
         prediction.setModel("Simple Linear Model");
-        prediction.setConfidence(0.75 + (random.nextDouble() * 0.15)); // 75-90% confidence
+        prediction.setConfidence(0.75 + (random.nextDouble() * 0.15));
 
-        // Save to Realtime Database
         String predictionId = databaseReference.push().getKey();
         if (predictionId != null) {
             prediction.setId(predictionId);
@@ -78,17 +77,17 @@ public class PredictionRepository {
         }
     }
 
-    // Simple prediction calculation (can be replaced with ML model)
+
     private int calculatePrediction(int currentAqi, int hoursAhead) {
-        // Simple algorithm: slight random variation over time
-        double variation = (random.nextDouble() - 0.5) * 20; // -10 to +10
-        double timeImpact = (hoursAhead / 24.0) * 5; // slight increase over days
+
+        double variation = (random.nextDouble() - 0.5) * 20;
+        double timeImpact = (hoursAhead / 24.0) * 5;
 
         int predicted = (int) (currentAqi + variation + timeImpact);
-        return Math.max(0, Math.min(500, predicted)); // Keep within 0-500 range
+        return Math.max(0, Math.min(500, predicted));
     }
 
-    // Generate multiple predictions (hourly forecast)
+
     public void generateHourlyForecast(String location, int currentAqi, String userId, PredictionListCallback callback) {
         List<Prediction> predictions = new ArrayList<>();
 
@@ -97,15 +96,15 @@ public class PredictionRepository {
             Prediction prediction = new Prediction(location, predictedAqi, hour);
             prediction.setUserId(userId);
             prediction.setModel("Hourly Forecast Model");
-            prediction.setConfidence(0.80 - (hour * 0.01)); // Confidence decreases over time
+            prediction.setConfidence(0.80 - (hour * 0.01));
             predictions.add(prediction);
         }
 
-        // Save all predictions to Realtime Database
+
         savePredictionsBatch(predictions, callback);
     }
 
-    // Generate daily forecast
+
     public void generateDailyForecast(String location, int currentAqi, String userId, PredictionListCallback callback) {
         List<Prediction> predictions = new ArrayList<>();
 
@@ -115,7 +114,7 @@ public class PredictionRepository {
             Prediction prediction = new Prediction(location, predictedAqi, hoursAhead);
             prediction.setUserId(userId);
             prediction.setModel("Daily Forecast Model");
-            prediction.setConfidence(0.75 - (day * 0.05)); // Confidence decreases over days
+            prediction.setConfidence(0.75 - (day * 0.05));
             predictions.add(prediction);
         }
 
@@ -128,7 +127,7 @@ public class PredictionRepository {
             return;
         }
 
-        // Save predictions one by one
+
         int[] savedCount = {0};
         for (Prediction prediction : predictions) {
             String predictionId = databaseReference.push().getKey();
@@ -160,7 +159,7 @@ public class PredictionRepository {
         }
     }
 
-    // Get user's predictions
+
     public void getUserPredictions(String userId, int limit, PredictionListCallback callback) {
         databaseReference.orderByChild("userId").equalTo(userId)
             .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -175,7 +174,7 @@ public class PredictionRepository {
                         }
                     }
 
-                    // Sort by timestamp descending and limit
+
                     predictions.sort((p1, p2) -> Long.compare(p2.getPredictionTimestamp(), p1.getPredictionTimestamp()));
                     if (predictions.size() > limit) {
                         predictions = predictions.subList(0, limit);
@@ -192,7 +191,7 @@ public class PredictionRepository {
             });
     }
 
-    // Get predictions by location
+
     public void getPredictionsByLocation(String location, int limit, PredictionListCallback callback) {
         databaseReference.orderByChild("location").equalTo(location)
             .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -207,7 +206,7 @@ public class PredictionRepository {
                         }
                     }
 
-                    // Sort by timestamp descending and limit
+
                     predictions.sort((p1, p2) -> Long.compare(p2.getPredictionTimestamp(), p1.getPredictionTimestamp()));
                     if (predictions.size() > limit) {
                         predictions = predictions.subList(0, limit);

@@ -4,9 +4,7 @@ import android.graphics.Color;
 
 public class AQICalculator {
 
-    /**
-     * Calculate AQI from PM2.5 concentration (μg/m³)
-     */
+
     public static int calculateAqiFromPM25(double pm25) {
         if (pm25 >= 0 && pm25 < 12.1) {
             return linearInterpolation(pm25, 0, 12.0, 0, 50);
@@ -26,9 +24,7 @@ public class AQICalculator {
         return 500;
     }
 
-    /**
-     * Calculate AQI from PM10 concentration (μg/m³)
-     */
+
     public static int calculateAqiFromPM10(double pm10) {
         if (pm10 >= 0 && pm10 < 55) {
             return linearInterpolation(pm10, 0, 54, 0, 50);
@@ -48,9 +44,7 @@ public class AQICalculator {
         return 500;
     }
 
-    /**
-     * Calculate overall AQI from all pollutants
-     */
+
     public static int calculateOverallAQI(double pm25, double pm10, double no2,
                                           double o3, double so2, double co) {
         int aqiPM25 = calculateAqiFromPM25(pm25);
@@ -65,9 +59,7 @@ public class AQICalculator {
         return (int) Math.round(((value - lowConc) / (highConc - lowConc)) * (highAqi - lowAqi) + lowAqi);
     }
 
-    /**
-     * Get AQI category name
-     */
+
     public static String getAQICategory(int aqi) {
         if (aqi <= 50) return "Good";
         else if (aqi <= 100) return "Moderate";
@@ -77,9 +69,7 @@ public class AQICalculator {
         else return "Hazardous";
     }
 
-    /**
-     * Get AQI color
-     */
+
     public static int getAQIColor(int aqi) {
         if (aqi <= 50) return Color.parseColor("#00E400"); // Green
         else if (aqi <= 100) return Color.parseColor("#FFFF00"); // Yellow
@@ -89,9 +79,7 @@ public class AQICalculator {
         else return Color.parseColor("#7E0023"); // Maroon
     }
 
-    /**
-     * Get health alert message
-     */
+
     public static String getHealthAlert(int aqi) {
         if (aqi <= 50) {
             return "Air quality is good. It's a great day to be active outside! 🌟";
@@ -108,9 +96,7 @@ public class AQICalculator {
         }
     }
 
-    /**
-     * Get preventive measures based on AQI
-     */
+
     public static String[] getPreventiveMeasures(int aqi) {
         if (aqi <= 50) {
             return new String[]{

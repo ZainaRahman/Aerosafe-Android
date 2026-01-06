@@ -8,10 +8,10 @@ public class Alert {
     private String message;
     private String createdBy;
     private long createdDate;
-    private String status; // "Active", "Inactive"
+    private String status;
 
     public Alert() {
-        // Required empty constructor for Firestore
+
     }
 
     public Alert(String alertType, String severity, String location, String message, String createdBy) {
@@ -24,7 +24,7 @@ public class Alert {
         this.status = "Active";
     }
 
-    // Getters and Setters
+
     public String getId() {
         return id;
     }

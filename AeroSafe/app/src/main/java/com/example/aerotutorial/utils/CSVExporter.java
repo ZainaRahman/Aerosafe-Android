@@ -37,12 +37,12 @@ public class CSVExporter {
         }
 
         try {
-            // Create filename with timestamp
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
             String timestamp = sdf.format(new Date());
             String filename = "AeroSafe_Research_Data_" + timestamp + ".csv";
 
-            // Get external storage directory
+
             File exportDir = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "AeroSafe");
             if (!exportDir.exists()) {
                 exportDir.mkdirs();
@@ -50,19 +50,18 @@ public class CSVExporter {
 
             File file = new File(exportDir, filename);
 
-            // Write CSV data
             FileWriter writer = new FileWriter(file);
 
-            // Write header
+
             writer.append("Timestamp,Location,Latitude,Longitude,AQI,PM2.5,PM10,NO2,O3,SO2,CO\n");
 
-            // Write data rows
+
             SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
             for (AirQualityData data : dataList) {
                 String dateStr = dateSdf.format(new Date(data.getTimestamp()));
                 writer.append(String.format(Locale.US, "%s,%s,%.6f,%.6f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
                     dateStr,
-                    data.getLocation().replace(",", ";"), // Escape commas in location
+                    data.getLocation().replace(",", ";"),
                     data.getLatitude(),
                     data.getLongitude(),
                     data.getAqi(),
@@ -78,7 +77,7 @@ public class CSVExporter {
             writer.flush();
             writer.close();
 
-            // Share the file
+
             shareFile(file);
 
             callback.onSuccess(file.getAbsolutePath());

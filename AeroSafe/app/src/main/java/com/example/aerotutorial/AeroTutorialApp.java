@@ -14,10 +14,10 @@ public class AeroTutorialApp extends Application {
         super.onCreate();
 
         try {
-            // Initialize Firebase
+
             FirebaseApp.initializeApp(this);
 
-            // Enable offline persistence for Realtime Database
+
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
             Log.d(TAG, "Firebase initialized successfully");

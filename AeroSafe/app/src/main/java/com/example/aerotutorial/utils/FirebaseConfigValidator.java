@@ -4,10 +4,7 @@ import android.util.Log;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 
-/**
- * Quick Firebase Configuration Validator
- * Validates Firebase setup without making network calls
- */
+
 public class FirebaseConfigValidator {
 
     private static final String TAG = "FirebaseConfigValidator";
@@ -19,7 +16,6 @@ public class FirebaseConfigValidator {
             FirebaseApp app = FirebaseApp.getInstance();
             FirebaseOptions options = app.getOptions();
 
-            // Validate required fields
             String projectId = options.getProjectId();
             String apiKey = options.getApiKey();
             String appId = options.getApplicationId();
@@ -31,7 +27,7 @@ public class FirebaseConfigValidator {
             } else {
                 Log.d(TAG, "✅ Project ID: " + projectId);
 
-                // Validate project ID format
+
                 if (!projectId.matches("^[a-z0-9-]+$")) {
                     Log.e(TAG, "⚠️  Project ID has invalid format");
                 } else {
@@ -65,7 +61,7 @@ public class FirebaseConfigValidator {
                 }
             }
 
-            // Check database URL
+
             String databaseUrl = options.getDatabaseUrl();
             if (databaseUrl != null && !databaseUrl.isEmpty()) {
                 Log.d(TAG, "✅ Database URL: " + databaseUrl);
@@ -79,7 +75,7 @@ public class FirebaseConfigValidator {
                 Log.w(TAG, "⚠️  Database URL is not set (might be normal if not using Realtime Database)");
             }
 
-            // Check storage bucket
+
             String storageBucket = options.getStorageBucket();
             if (storageBucket != null && !storageBucket.isEmpty()) {
                 Log.d(TAG, "✅ Storage Bucket: " + storageBucket);
@@ -101,9 +97,7 @@ public class FirebaseConfigValidator {
         }
     }
 
-    /**
-     * Check if configuration matches expected values for this project
-     */
+
     public static void validateExpectedConfiguration() {
         Log.d(TAG, "🔍 VALIDATING AGAINST EXPECTED VALUES");
 

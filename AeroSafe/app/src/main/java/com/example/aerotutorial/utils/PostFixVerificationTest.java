@@ -6,10 +6,7 @@ import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 
-/**
- * Post-Fix Verification Test
- * Tests if the SHA1 fix resolved the internal error
- */
+
 public class PostFixVerificationTest {
 
     private static final String TAG = "PostFixVerification";
@@ -31,7 +28,7 @@ public class PostFixVerificationTest {
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        // Test API key with password reset (validates API key restrictions)
+
         auth.sendPasswordResetEmail("testvalidation@nonexistent.com")
             .addOnCompleteListener(task -> {
                 if (!task.isSuccessful()) {

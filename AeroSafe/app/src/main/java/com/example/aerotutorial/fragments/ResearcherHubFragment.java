@@ -157,6 +157,6 @@ public class ResearcherHubFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadResearchData(); // Refresh data when fragment becomes visible
+        loadResearchData();
     }
 }

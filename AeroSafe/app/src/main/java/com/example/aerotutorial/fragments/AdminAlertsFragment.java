@@ -75,7 +75,7 @@ public class AdminAlertsFragment extends Fragment {
     }
 
     private void setupDropdowns() {
-        // Alert types
+
         String[] alertTypes = {
             "High AQI Alert",
             "Health Advisory",
@@ -90,7 +90,7 @@ public class AdminAlertsFragment extends Fragment {
         );
         actvAlertType.setAdapter(typeAdapter);
 
-        // Severity levels
+
         String[] severityLevels = {"Low", "Medium", "High", "Critical"};
         ArrayAdapter<String> severityAdapter = new ArrayAdapter<>(
             requireContext(),
@@ -118,7 +118,7 @@ public class AdminAlertsFragment extends Fragment {
         String location = etAlertLocation.getText().toString().trim();
         String message = etAlertMessage.getText().toString().trim();
 
-        // Validation
+
         if (alertType.isEmpty() || severity.isEmpty() ||
             location.isEmpty() || message.isEmpty()) {
             Toast.makeText(requireContext(),

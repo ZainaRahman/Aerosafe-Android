@@ -12,10 +12,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * AQI API Error Diagnostic Tool
- * Identifies and fixes "error fetching API" issues
- */
+
 public class AQIErrorDiagnostic {
 
     private static final String TAG = "AQIErrorDiagnostic";
@@ -55,8 +52,8 @@ public class AQIErrorDiagnostic {
         PreferencesManager prefsManager = new PreferencesManager(activity);
         String storedApiKey = prefsManager.getApiKey();
 
-        // Check AQIRepository API key
-        String repositoryApiKey = "98e192f418b2437e52cb54df708958f9"; // From AQIRepository
+
+        String repositoryApiKey = "98e192f418b2437e52cb54df708958f9";
 
         Log.d(TAG, "Stored API key: " + (storedApiKey.isEmpty() ? "EMPTY" : "SET (" + storedApiKey.length() + " chars)"));
         Log.d(TAG, "Repository API key: " + repositoryApiKey);
@@ -71,7 +68,7 @@ public class AQIErrorDiagnostic {
             Log.d(TAG, "✅ API key is configured");
         }
 
-        // Validate API key format
+
         if (!storedApiKey.isEmpty() && storedApiKey.length() == 32) {
             Log.d(TAG, "✅ API key has valid OpenWeatherMap format (32 characters)");
         } else if (!storedApiKey.isEmpty()) {
@@ -86,12 +83,12 @@ public class AQIErrorDiagnostic {
         String apiKey = prefsManager.getApiKey();
 
         if (apiKey.isEmpty()) {
-            // Use the repository API key as fallback
+
             apiKey = "98e192f418b2437e52cb54df708958f9";
             Log.d(TAG, "Using repository API key for test");
         }
 
-        // Test with London coordinates (known valid location)
+
         double testLat = 51.5074;
         double testLon = -0.1278;
 

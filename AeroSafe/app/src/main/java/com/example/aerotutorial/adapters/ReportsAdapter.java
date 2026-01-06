@@ -44,32 +44,31 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Report report = reportsList.get(position);
 
-        // Report ID
+
         holder.tvReportId.setText("#" + (position + 1));
 
-        // Status with color
         holder.tvStatus.setText(report.getStatus());
         holder.tvStatus.setBackgroundColor(getStatusColor(report.getStatus()));
 
-        // Reporter info
+
         holder.tvReporterName.setText("👤 " + report.getReporterName());
 
-        // Date
+
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         String date = sdf.format(new Date(report.getSubmittedDate()));
         holder.tvDate.setText("📅 " + date);
 
-        // Location
+
         holder.tvLocation.setText("📍 Location: " + report.getLocation());
 
-        // Issue type and severity
+
         holder.tvIssueType.setText(report.getIssueType());
         holder.tvSeverity.setText(getSeverityIcon(report.getSeverity()) + " " + report.getSeverity());
 
-        // Description
+
         holder.tvDescription.setText(report.getDescription());
 
-        // Action buttons
+
         holder.btnViewDetails.setOnClickListener(v -> {
             if (actionListener != null) {
                 actionListener.onAction(report, "view");
@@ -88,7 +87,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ViewHold
             }
         });
 
-        // Hide resolve button if already resolved
+
         if ("Resolved".equals(report.getStatus())) {
             holder.btnResolve.setVisibility(View.GONE);
         } else {

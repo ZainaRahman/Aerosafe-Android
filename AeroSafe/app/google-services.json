@@ -13,7 +13,20 @@
           "package_name": "com.example.aerotutorial"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "630961771418-52e45ga1soa56rt9tvvt2beivgp49806.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.aerotutorial",
+            "certificate_hash": "ddc7c20be7da541a077b035f6572be758f262862"
+          }
+        },
+        {
+          "client_id": "630961771418-b2him8om6mfjhrmqt692pa94160keo4u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBcfTah90gce8QFBlzOMDCVcKh_p8yOvfg"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "630961771418-b2him8om6mfjhrmqt692pa94160keo4u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
