@@ -1,112 +1,97 @@
 package com.example.aerotutorial.adapters;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.aerotutorial.R;
 import com.example.aerotutorial.models.Alert;
-import com.google.android.material.button.MaterialButton;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder> {
+public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.AlertViewHolder> {
 
-    private final List<Alert> alertsList;
-    private final OnDeactivateClickListener deactivateListener;
+    private List<Alert> alerts;
+    private OnAlertClickListener onAlertClickListener;
 
-    public interface OnDeactivateClickListener {
-        void onDeactivate(Alert alert);
+    public interface OnAlertClickListener {
+        void onAlertClick(Alert alert);
     }
 
-    public AlertsAdapter(List<Alert> alertsList, OnDeactivateClickListener deactivateListener) {
-        this.alertsList = alertsList;
-        this.deactivateListener = deactivateListener;
+    public AlertsAdapter(List<Alert> alerts, OnAlertClickListener listener) {
+        this.alerts = alerts;
+        this.onAlertClickListener = listener;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public AlertViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-            .inflate(R.layout.item_alert, parent, false);
-        return new ViewHolder(view);
+                .inflate(R.layout.item_alert, parent, false);
+        return new AlertViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Alert alert = alertsList.get(position);
-
-
-        holder.tvAlertType.setText("🚨 " + alert.getAlertType());
-
-
-        holder.tvSeverity.setText(alert.getSeverity());
-        holder.tvSeverity.setBackgroundColor(getSeverityColor(alert.getSeverity()));
-
-
-        holder.tvLocation.setText("📍 " + alert.getLocation());
-
-
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault());
-        String date = sdf.format(new Date(alert.getCreatedDate()));
-        holder.tvDate.setText("📅 " + date);
-
-
-        holder.tvMessage.setText(alert.getMessage());
-
-
-        holder.tvCreatedBy.setText("Created by: " + alert.getCreatedBy());
-
-
-        holder.btnDeactivate.setOnClickListener(v -> {
-            if (deactivateListener != null) {
-                deactivateListener.onDeactivate(alert);
-            }
-        });
+    public void onBindViewHolder(@NonNull AlertViewHolder holder, int position) {
+        Alert alert = alerts.get(position);
+        holder.bind(alert);
     }
 
     @Override
     public int getItemCount() {
-        return alertsList.size();
+        return alerts.size();
     }
 
-    private int getSeverityColor(String severity) {
-        switch (severity.toLowerCase()) {
-            case "low":
-                return Color.parseColor("#4CAF50"); // Green
-            case "medium":
-                return Color.parseColor("#FFC107"); // Yellow
-            case "high":
-                return Color.parseColor("#FF9800"); // Orange
-            case "critical":
-                return Color.parseColor("#F44336"); // Red
-            default:
-                return Color.GRAY;
-        }
-    }
+    class AlertViewHolder extends RecyclerView.ViewHolder {
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvAlertType, tvSeverity, tvLocation, tvDate, tvMessage, tvCreatedBy;
-        MaterialButton btnDeactivate;
+        private CardView cardView;
+        private TextView tvEmoji, tvTitle, tvMessage, tvTime, tvSeverity;
+        private View severityIndicator;
 
-        ViewHolder(@NonNull View itemView) {
+        public AlertViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvAlertType = itemView.findViewById(R.id.tvAlertType);
-            tvSeverity = itemView.findViewById(R.id.tvSeverity);
-            tvLocation = itemView.findViewById(R.id.tvLocation);
-            tvDate = itemView.findViewById(R.id.tvDate);
+
+            cardView = itemView.findViewById(R.id.cardView);
+            tvEmoji = itemView.findViewById(R.id.tvEmoji);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
             tvMessage = itemView.findViewById(R.id.tvMessage);
-            tvCreatedBy = itemView.findViewById(R.id.tvCreatedBy);
-            btnDeactivate = itemView.findViewById(R.id.btnDeactivate);
+            tvTime = itemView.findViewById(R.id.tvTime);
+            tvSeverity = itemView.findViewById(R.id.tvSeverity);
+            severityIndicator = itemView.findViewById(R.id.severityIndicator);
+        }
+
+        public void bind(Alert alert) {
+            tvEmoji.setText(alert.getSeverityEmoji());
+            tvTitle.setText(alert.getTitle());
+            tvMessage.setText(alert.getMessage());
+            tvTime.setText(alert.getTimeAgo());
+            tvSeverity.setText(alert.getSeverity().toUpperCase());
+
+            // Set severity color
+            int severityColor = alert.getSeverityColor();
+            tvSeverity.setTextColor(severityColor);
+            severityIndicator.setBackgroundColor(severityColor);
+
+            // Set read/unread state
+            if (alert.isRead()) {
+                cardView.setAlpha(0.7f);
+                cardView.setCardElevation(2f);
+            } else {
+                cardView.setAlpha(1.0f);
+                cardView.setCardElevation(4f);
+            }
+
+            // Set click listener
+            cardView.setOnClickListener(v -> {
+                if (onAlertClickListener != null) {
+                    onAlertClickListener.onAlertClick(alert);
+                }
+            });
         }
     }
 }
-
