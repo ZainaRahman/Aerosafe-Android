@@ -1,19 +1,5 @@
 # AeroSafe - Air Quality Monitoring Android App
 
-> **✅ SHA-1 CERTIFICATE FOUND!**
-> - Your SHA-1: `DD:C7:C2:0B:E7:DA:54:1A:07:7B:03:5F:65:72:BE:75:8F:26:28:62`
-> - **SEE: [YOUR_SHA1_CERTIFICATE.txt](YOUR_SHA1_CERTIFICATE.txt)** for complete Firebase setup instructions!
-
-> **🚨 CRITICAL: Java 25 Compatibility Issue!**
-> - If you get "BUILD FAILED" with error "25", see: **[FIX_JAVA_25_ERROR.md](FIX_JAVA_25_ERROR.md)**
-> - Quick fix: Android Studio → Settings → Gradle → Set JDK to "Embedded JDK (jbr-17)"
-
-> **⚠️ OTHER ISSUES?** See troubleshooting guides:
-> - 🚨 **[FIX_JAVA_25_ERROR.md](FIX_JAVA_25_ERROR.md)** - Fix Java 25 incompatibility (READ THIS FIRST!)
-> - 🚀 **[START_HERE.md](START_HERE.md)** - Quick 5-minute fix for Firebase errors
-> - 🔧 **[FIX_JAVA_HOME_ERROR.md](FIX_JAVA_HOME_ERROR.md)** - Fix "Java home supplied seems to be invalid" error  
-> - 📖 **[COMPLETE_FIX_GUIDE.md](COMPLETE_FIX_GUIDE.md)** - Step-by-step with all details
-> - 🔑 **[HOW_TO_GET_SHA1.md](HOW_TO_GET_SHA1.md)** - Multiple methods to get SHA-1 certificate
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Android-green.svg" alt="Platform">
