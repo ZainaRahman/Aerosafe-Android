@@ -65,6 +65,12 @@
             android:exported="false"
             android:label="Report Environmental Issue" />
 
+        <!-- Alerts Activity -->
+        <activity
+            android:name=".AlertsActivity"
+            android:exported="false"
+            android:label="Air Quality Alerts" />
+
         <!-- Old MainActivity (kept for compatibility) -->
         <activity
             android:name=".MainActivity"

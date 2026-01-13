@@ -14,6 +14,7 @@ public class AirQualityData {
     private double co;
     private long timestamp;
     private String date;
+    private String researcherId;
 
     public AirQualityData() {
 
@@ -138,5 +139,12 @@ public class AirQualityData {
     public void setDate(String date) {
         this.date = date;
     }
-}
 
+    public String getResearcherId() {
+        return researcherId;
+    }
+
+    public void setResearcherId(String researcherId) {
+        this.researcherId = researcherId;
+    }
+}
