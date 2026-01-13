@@ -13,12 +13,17 @@
     <!-- Background Colors -->
     <color name="background">#F5F5F5</color>
     <color name="background_dark">#263238</color>
+    <color name="background_light">#FAFAFA</color>
     <color name="card_background">#FFFFFF</color>
 
     <!-- Text Colors -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <color name="text_tertiary">#9E9E9E</color>
     <color name="text_hint">#9E9E9E</color>
+
+    <!-- UI Elements -->
+    <color name="divider">#E0E0E0</color>
 
     <!-- AQI Colors -->
     <color name="aqi_good">#00E400</color>
