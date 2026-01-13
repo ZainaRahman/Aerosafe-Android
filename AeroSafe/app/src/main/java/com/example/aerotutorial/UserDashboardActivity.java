@@ -2,19 +2,25 @@ package com.example.aerotutorial;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 
 import com.example.aerotutorial.api.RetrofitClient;
 import com.example.aerotutorial.models.AirPollutionResponse;
+import com.example.aerotutorial.models.GeocodingResponse;
 import com.example.aerotutorial.repository.AuthRepository;
 import com.example.aerotutorial.utils.AQICalculator;
 import com.example.aerotutorial.utils.ChartHelper;
@@ -32,6 +38,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -48,6 +55,7 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
     private LineChart lineChart;
     private LinearLayout llPreventiveMeasures;
     private ProgressBar progressBar;
+    private NestedScrollView scrollView;
 
     private GoogleMap googleMap;
     private AuthRepository authRepository;
@@ -88,6 +96,7 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
         lineChart = findViewById(R.id.lineChart);
         llPreventiveMeasures = findViewById(R.id.llPreventiveMeasures);
         progressBar = findViewById(R.id.progressBar);
+        scrollView = findViewById(R.id.scrollView);
     }
 
     private void setupToolbar() {
@@ -106,6 +115,16 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
         btnSearch.setOnClickListener(v -> searchLocation());
         btnReportIssue.setOnClickListener(v -> openReportIssue());
         btnViewAlerts.setOnClickListener(v -> viewAlerts());
+
+        // Add enter key support for search
+        etSearchLocation.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
+                searchLocation();
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -116,15 +135,38 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
         googleMap.addMarker(new MarkerOptions().position(initialPos).title(selectedLocation));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPos, 10));
 
+        // Fix map scrolling issue - disable parent scrolling when touching map
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+        if (mapFragment != null && mapFragment.getView() != null) {
+            mapFragment.getView().setOnTouchListener((v, event) -> {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_MOVE:
+                        // Disable parent scrolling when touching map
+                        scrollView.requestDisallowInterceptTouchEvent(true);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        // Re-enable parent scrolling
+                        scrollView.requestDisallowInterceptTouchEvent(false);
+                        break;
+                }
+                return false;
+            });
+        }
+
         googleMap.setOnMapClickListener(latLng -> {
             selectedLat = latLng.latitude;
             selectedLon = latLng.longitude;
             googleMap.clear();
             googleMap.addMarker(new MarkerOptions().position(latLng).title("Selected Location"));
-            fetchAQIData();
+
+            // Update location name using reverse geocoding
+            updateLocationName(latLng);
+            fetchHistoricalAQIData();
         });
 
-        fetchAQIData();
+        fetchHistoricalAQIData();
     }
 
     private void searchLocation() {
@@ -133,28 +175,101 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
             Toast.makeText(this, "Enter a location", Toast.LENGTH_SHORT).show();
             return;
         }
-        Toast.makeText(this, "Search: " + query, Toast.LENGTH_SHORT).show();
-    }
 
-    private void fetchAQIData() {
         progressBar.setVisibility(View.VISIBLE);
-
 
         String apiKey = prefsManager.getApiKey();
         if (apiKey.isEmpty() || apiKey.equals("YOUR_API_KEY")) {
             apiKey = "98e192f418b2437e52cb54df708958f9";
         }
 
+        // Use Geocoding API to search for location
+        RetrofitClient.getOpenWeatherApi()
+            .geocodeLocation(query, 1, apiKey)
+            .enqueue(new Callback<List<GeocodingResponse>>() {
+                @Override
+                public void onResponse(Call<List<GeocodingResponse>> call, Response<List<GeocodingResponse>> response) {
+                    progressBar.setVisibility(View.GONE);
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        GeocodingResponse location = response.body().get(0);
+                        selectedLat = location.getLat();
+                        selectedLon = location.getLon();
+                        selectedLocation = location.getName() + ", " + location.getCountry();
+
+                        // Update map
+                        LatLng newPos = new LatLng(selectedLat, selectedLon);
+                        googleMap.clear();
+                        googleMap.addMarker(new MarkerOptions().position(newPos).title(selectedLocation));
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPos, 12));
+
+                        // Update UI
+                        tvSelectedLocation.setText(selectedLocation);
+                        etSearchLocation.setText("");
+
+                        // Fetch new data
+                        fetchHistoricalAQIData();
+
+                        Toast.makeText(UserDashboardActivity.this, "Location found: " + selectedLocation, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(UserDashboardActivity.this, "Location not found", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<GeocodingResponse>> call, Throwable t) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(UserDashboardActivity.this, "Search failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+
+    private void fetchHistoricalAQIData() {
+        progressBar.setVisibility(View.VISIBLE);
+
+        String tempApiKey = prefsManager.getApiKey();
+        if (tempApiKey.isEmpty() || tempApiKey.equals("YOUR_API_KEY")) {
+            tempApiKey = "98e192f418b2437e52cb54df708958f9";
+        }
+        final String apiKey = tempApiKey;
+
+        // Calculate timestamps for last 7 days
+        Calendar calendar = Calendar.getInstance();
+        long endTime = calendar.getTimeInMillis() / 1000;
+        calendar.add(Calendar.DAY_OF_YEAR, -7);
+        long startTime = calendar.getTimeInMillis() / 1000;
+
+        // First fetch current data
         RetrofitClient.getOpenWeatherApi()
             .getAirPollution(selectedLat, selectedLon, apiKey)
             .enqueue(new Callback<AirPollutionResponse>() {
                 @Override
                 public void onResponse(Call<AirPollutionResponse> call, Response<AirPollutionResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        displayCurrentAQIData(response.body());
+                    }
+                    // Then fetch historical data
+                    fetchHistoricalData(startTime, endTime, apiKey);
+                }
+
+                @Override
+                public void onFailure(Call<AirPollutionResponse> call, Throwable t) {
+                    // Still try to fetch historical data
+                    fetchHistoricalData(startTime, endTime, apiKey);
+                }
+            });
+    }
+
+    private void fetchHistoricalData(long startTime, long endTime, String apiKey) {
+        RetrofitClient.getOpenWeatherApi()
+            .getHistoricalAirPollution(selectedLat, selectedLon, startTime, endTime, apiKey)
+            .enqueue(new Callback<AirPollutionResponse>() {
+                @Override
+                public void onResponse(Call<AirPollutionResponse> call, Response<AirPollutionResponse> response) {
                     progressBar.setVisibility(View.GONE);
                     if (response.isSuccessful() && response.body() != null) {
-                        displayAQIData(response.body());
+                        processHistoricalData(response.body());
                     } else {
-                        showError("Failed to fetch data");
+                        showError("Failed to fetch historical data");
                     }
                 }
 
@@ -166,9 +281,8 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
             });
     }
 
-    private void displayAQIData(AirPollutionResponse response) {
+    private void displayCurrentAQIData(AirPollutionResponse response) {
         if (response.getList() == null || response.getList().isEmpty()) {
-            showError("No data available");
             return;
         }
 
@@ -192,22 +306,122 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
         tvHealthAlert.setText(healthAlert);
         tvHealthAlert.setTextColor(aqiColor);
 
-        aqiHistory.add(aqi);
-        if (aqiHistory.size() > 7) aqiHistory.remove(0);
+        updatePreventiveMeasures(aqi);
+    }
 
-        ChartHelper.setupLineChart(lineChart, aqiHistory);
+    private void processHistoricalData(AirPollutionResponse response) {
+        if (response.getList() == null || response.getList().isEmpty()) {
+            showError("No historical data available");
+            return;
+        }
 
+        aqiHistory.clear();
+        List<AirPollutionResponse.AirData> dataList = response.getList();
+
+        // Group data by day and calculate average AQI per day
+        int dataSize = dataList.size();
+        int daysToShow = Math.min(7, dataSize);
+        
+        if (dataSize >= 7) {
+            // If we have enough data, sample evenly across 7 days
+            int step = dataSize / 7;
+            for (int i = 0; i < 7; i++) {
+                int index = Math.min(i * step, dataSize - 1);
+                AirPollutionResponse.AirData data = dataList.get(index);
+                AirPollutionResponse.Components components = data.getComponents();
+
+                int aqi = AQICalculator.calculateOverallAQI(
+                    components.getPm25(), components.getPm10(), components.getNo2(),
+                    components.getO3(), components.getSo2(), components.getCo()
+                );
+                aqiHistory.add(aqi);
+            }
+        } else {
+            // If we have less data, use all available points
+            for (AirPollutionResponse.AirData data : dataList) {
+                AirPollutionResponse.Components components = data.getComponents();
+
+                int aqi = AQICalculator.calculateOverallAQI(
+                    components.getPm25(), components.getPm10(), components.getNo2(),
+                    components.getO3(), components.getSo2(), components.getCo()
+                );
+                aqiHistory.add(aqi);
+            }
+        }
+
+        // Ensure we have at least some data
+        if (aqiHistory.isEmpty() && !dataList.isEmpty()) {
+            AirPollutionResponse.AirData data = dataList.get(0);
+            AirPollutionResponse.Components components = data.getComponents();
+            int aqi = AQICalculator.calculateOverallAQI(
+                components.getPm25(), components.getPm10(), components.getNo2(),
+                components.getO3(), components.getSo2(), components.getCo()
+            );
+            aqiHistory.add(aqi);
+        }
+
+        // Update chart
+        if (!aqiHistory.isEmpty()) {
+            ChartHelper.setupLineChart(lineChart, aqiHistory);
+            lineChart.setVisibility(View.VISIBLE);
+        }
+
+        // Calculate and display predictions
         if (aqiHistory.size() >= 2) {
             PredictionEngine.PredictionResult result = PredictionEngine.predictNextDay(aqiHistory);
-            tvPredictedAQI.setText(String.valueOf((int) Math.round(result.predicted)));
+            int predictedValue = (int) Math.round(result.predicted);
+            tvPredictedAQI.setText(String.valueOf(predictedValue));
+            
+            // Set prediction color based on predicted AQI
+            int predictionColor = AQICalculator.getAQIColor(predictedValue);
+            tvPredictedAQI.setTextColor(predictionColor);
+            
             tvTrend.setText(result.getTrend());
+            tvPredictionNote.setText("Based on " + aqiHistory.size() + " data points");
+            tvPredictionNote.setVisibility(View.VISIBLE);
+        } else if (aqiHistory.size() == 1) {
+            // If only one data point, show it as prediction
+            tvPredictedAQI.setText(String.valueOf(aqiHistory.get(0)));
+            tvTrend.setText("→ Stable (Insufficient data)");
+            tvPredictionNote.setText("Need more historical data for accurate prediction");
             tvPredictionNote.setVisibility(View.VISIBLE);
         } else {
             tvPredictedAQI.setText("--");
+            tvTrend.setText("No data");
             tvPredictionNote.setText("Need more data points");
+            tvPredictionNote.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void updateLocationName(LatLng latLng) {
+        String apiKey = prefsManager.getApiKey();
+        if (apiKey.isEmpty() || apiKey.equals("YOUR_API_KEY")) {
+            apiKey = "98e192f418b2437e52cb54df708958f9";
         }
 
-        updatePreventiveMeasures(aqi);
+        RetrofitClient.getOpenWeatherApi()
+            .reverseGeocode(latLng.latitude, latLng.longitude, 1, apiKey)
+            .enqueue(new Callback<List<GeocodingResponse>>() {
+                @Override
+                public void onResponse(Call<List<GeocodingResponse>> call, Response<List<GeocodingResponse>> response) {
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        GeocodingResponse location = response.body().get(0);
+                        selectedLocation = location.getName() + ", " + location.getCountry();
+                        tvSelectedLocation.setText(selectedLocation);
+                    } else {
+                        selectedLocation = "Lat: " + String.format("%.4f", latLng.latitude) +
+                                         ", Lon: " + String.format("%.4f", latLng.longitude);
+                        tvSelectedLocation.setText(selectedLocation);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<GeocodingResponse>> call, Throwable t) {
+                    selectedLocation = "Lat: " + String.format("%.4f", latLng.latitude) +
+                                     ", Lon: " + String.format("%.4f", latLng.longitude);
+                    tvSelectedLocation.setText(selectedLocation);
+                }
+            });
     }
 
     private void updatePreventiveMeasures(int aqi) {
@@ -226,7 +440,14 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
     }
 
     private void viewAlerts() {
-        Toast.makeText(this, "View Alerts - Coming Soon", Toast.LENGTH_SHORT).show();
+        try {
+            android.util.Log.d("UserDashboard", "Starting AlertsActivity");
+            Intent intent = new Intent(this, AlertsActivity.class);
+            startActivity(intent);
+        } catch (Exception e) {
+            android.util.Log.e("UserDashboard", "Error starting AlertsActivity: " + e.getMessage(), e);
+            Toast.makeText(this, "Error opening alerts: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void showError(String message) {
@@ -234,6 +455,8 @@ public class UserDashboardActivity extends AppCompatActivity implements OnMapRea
         tvCurrentAQI.setText("--");
         tvAQICategory.setText("No data");
         tvHealthAlert.setText(message);
+        tvPredictedAQI.setText("--");
+        tvTrend.setText("Data unavailable");
     }
 
     @Override
