@@ -17,7 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.aerotutorial.R;
 import com.example.aerotutorial.adapters.AlertsAdapter;
+import com.example.aerotutorial.api.RetrofitClient;
 import com.example.aerotutorial.models.Alert;
+import com.example.aerotutorial.models.GeocodingResponse;
 import com.example.aerotutorial.repository.AlertRepository;
 import com.example.aerotutorial.utils.PreferencesManager;
 import com.google.android.material.button.MaterialButton;
@@ -29,7 +31,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class AdminAlertsFragment extends Fragment {
+
+    private static final String API_KEY = "98e192f418b2437e52cb54df708958f9";
 
     private AutoCompleteTextView actvAlertType, actvSeverity;
     private TextInputEditText etAlertLocation, etAlertMessage;
@@ -41,6 +49,9 @@ public class AdminAlertsFragment extends Fragment {
     private List<Alert> alertsList;
     private AlertRepository repository;
     private PreferencesManager prefsManager;
+    
+    private double alertLatitude = 0;
+    private double alertLongitude = 0;
 
     @Nullable
     @Override
@@ -75,7 +86,7 @@ public class AdminAlertsFragment extends Fragment {
     }
 
     private void setupDropdowns() {
-
+        // Alert Types
         String[] alertTypes = {
             "High AQI Alert",
             "Health Advisory",
@@ -90,7 +101,17 @@ public class AdminAlertsFragment extends Fragment {
         );
         actvAlertType.setAdapter(typeAdapter);
 
+        // Make alert type dropdown clickable
+        actvAlertType.setOnClickListener(v -> {
+            actvAlertType.showDropDown();
+        });
 
+        // Set default selection
+        actvAlertType.setOnItemClickListener((parent, view, position, id) -> {
+            // Item selected, do nothing special
+        });
+
+        // Severity Levels
         String[] severityLevels = {"Low", "Medium", "High", "Critical"};
         ArrayAdapter<String> severityAdapter = new ArrayAdapter<>(
             requireContext(),
@@ -98,6 +119,16 @@ public class AdminAlertsFragment extends Fragment {
             severityLevels
         );
         actvSeverity.setAdapter(severityAdapter);
+
+        // Make severity dropdown clickable
+        actvSeverity.setOnClickListener(v -> {
+            actvSeverity.showDropDown();
+        });
+
+        // Set default selection
+        actvSeverity.setOnItemClickListener((parent, view, position, id) -> {
+            // Item selected, do nothing special
+        });
     }
 
     private void setupRecyclerView() {
@@ -110,6 +141,50 @@ public class AdminAlertsFragment extends Fragment {
 
     private void setupListeners() {
         btnCreateAlert.setOnClickListener(v -> createAlert());
+        
+        // Add listener to get coordinates when location is entered
+        etAlertLocation.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String location = etAlertLocation.getText().toString().trim();
+                if (!location.isEmpty()) {
+                    geocodeLocation(location);
+                }
+            }
+        });
+    }
+
+    private void geocodeLocation(String location) {
+        RetrofitClient.getOpenWeatherApi()
+            .geocode(location, 1, API_KEY)
+            .enqueue(new Callback<List<GeocodingResponse>>() {
+                @Override
+                public void onResponse(Call<List<GeocodingResponse>> call,
+                                     Response<List<GeocodingResponse>> response) {
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        GeocodingResponse result = response.body().get(0);
+                        alertLatitude = result.getLat();
+                        alertLongitude = result.getLon();
+                        android.util.Log.d("AdminAlerts", "Geocoded location: " + 
+                            alertLatitude + ", " + alertLongitude);
+                        Toast.makeText(requireContext(), 
+                            "✓ Location found: " + result.getDisplayName(), 
+                            Toast.LENGTH_SHORT).show();
+                    } else {
+                        alertLatitude = 0;
+                        alertLongitude = 0;
+                        Toast.makeText(requireContext(), 
+                            "⚠ Location not found. Alert will be visible to all users.", 
+                            Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<GeocodingResponse>> call, Throwable t) {
+                    alertLatitude = 0;
+                    alertLongitude = 0;
+                    android.util.Log.e("AdminAlerts", "Geocoding failed: " + t.getMessage());
+                }
+            });
     }
 
     private void createAlert() {
@@ -118,6 +193,7 @@ public class AdminAlertsFragment extends Fragment {
         String location = etAlertLocation.getText().toString().trim();
         String message = etAlertMessage.getText().toString().trim();
 
+        android.util.Log.d("AdminAlerts", "Creating alert - Type: " + alertType + ", Severity: " + severity);
 
         if (alertType.isEmpty() || severity.isEmpty() ||
             location.isEmpty() || message.isEmpty()) {
@@ -127,25 +203,166 @@ public class AdminAlertsFragment extends Fragment {
             return;
         }
 
+        // Disable button to prevent double-clicks
+        btnCreateAlert.setEnabled(false);
+
         String createdBy = prefsManager.getUserName();
         if (createdBy.isEmpty()) {
             createdBy = "Admin";
         }
 
-        Alert alert = new Alert(alertType, severity, location, message, createdBy);
+        android.util.Log.d("AdminAlerts", "Alert created by: " + createdBy);
 
-        repository.createAlert(alert)
-            .addOnSuccessListener(aVoid -> {
-                Toast.makeText(requireContext(),
-                    "Alert created successfully",
-                    Toast.LENGTH_SHORT).show();
-                clearForm();
-                loadAlerts();
-            })
-            .addOnFailureListener(e -> {
-                Toast.makeText(requireContext(),
-                    "Failed to create alert: " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
+        // Geocode location if not already done
+        if (alertLatitude == 0 && alertLongitude == 0) {
+            Toast.makeText(requireContext(), "Getting location coordinates...", Toast.LENGTH_SHORT).show();
+            geocodeLocationAndCreateAlert(alertType, severity, location, message, createdBy);
+            return;
+        }
+
+        try {
+            Alert alert = new Alert(alertType, severity, location, message, createdBy, alertLatitude, alertLongitude);
+
+            android.util.Log.d("AdminAlerts", "Alert object created. Saving to Firebase...");
+            android.util.Log.d("AdminAlerts", "Location: " + location + " (" + alertLatitude + ", " + alertLongitude + ")");
+
+            repository.createAlert(alert)
+                .addOnSuccessListener(aVoid -> {
+                    android.util.Log.d("AdminAlerts", "Alert saved successfully to Firebase");
+                    btnCreateAlert.setEnabled(true);
+                    Toast.makeText(requireContext(),
+                        "✅ Alert created successfully",
+                        Toast.LENGTH_SHORT).show();
+                    clearForm();
+                    loadAlerts();
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("AdminAlerts", "Failed to create alert", e);
+                    btnCreateAlert.setEnabled(true);
+
+                    String errorMsg = e.getMessage();
+                    if (errorMsg != null && errorMsg.contains("Permission denied")) {
+                        Toast.makeText(requireContext(),
+                            "❌ Permission denied. Check Firebase Database Rules.",
+                            Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(requireContext(),
+                            "❌ Failed to create alert: " + errorMsg,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+        } catch (Exception e) {
+            android.util.Log.e("AdminAlerts", "Exception creating alert", e);
+            btnCreateAlert.setEnabled(true);
+            Toast.makeText(requireContext(),
+                "Error: " + e.getMessage(),
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void geocodeLocationAndCreateAlert(String alertType, String severity, 
+                                               String location, String message, String createdBy) {
+        android.util.Log.d("AdminAlerts", "Geocoding location: " + location);
+
+        RetrofitClient.getOpenWeatherApi()
+            .geocode(location, 1, API_KEY)
+            .enqueue(new Callback<List<GeocodingResponse>>() {
+                @Override
+                public void onResponse(Call<List<GeocodingResponse>> call,
+                                     Response<List<GeocodingResponse>> response) {
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        GeocodingResponse result = response.body().get(0);
+                        alertLatitude = result.getLat();
+                        alertLongitude = result.getLon();
+                        android.util.Log.d("AdminAlerts", "Geocoding success: " + alertLatitude + ", " + alertLongitude);
+                    } else {
+                        android.util.Log.w("AdminAlerts", "Geocoding returned no results");
+                    }
+                    
+                    try {
+                        Alert alert = new Alert(alertType, severity, location, message,
+                                              createdBy, alertLatitude, alertLongitude);
+
+                        android.util.Log.d("AdminAlerts", "Saving alert to Firebase...");
+
+                        repository.createAlert(alert)
+                            .addOnSuccessListener(aVoid -> {
+                                android.util.Log.d("AdminAlerts", "Alert created successfully");
+                                btnCreateAlert.setEnabled(true);
+                                Toast.makeText(requireContext(),
+                                    "✅ Alert created successfully",
+                                    Toast.LENGTH_SHORT).show();
+                                clearForm();
+                                loadAlerts();
+                            })
+                            .addOnFailureListener(e -> {
+                                android.util.Log.e("AdminAlerts", "Failed to create alert", e);
+                                btnCreateAlert.setEnabled(true);
+
+                                String errorMsg = e.getMessage();
+                                if (errorMsg != null && errorMsg.contains("Permission denied")) {
+                                    Toast.makeText(requireContext(),
+                                        "❌ Permission denied. Check Firebase Database Rules.",
+                                        Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(requireContext(),
+                                        "❌ Failed to create alert: " + errorMsg,
+                                        Toast.LENGTH_LONG).show();
+                                }
+                            });
+                    } catch (Exception e) {
+                        android.util.Log.e("AdminAlerts", "Exception creating alert", e);
+                        btnCreateAlert.setEnabled(true);
+                        Toast.makeText(requireContext(),
+                            "Error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<GeocodingResponse>> call, Throwable t) {
+                    android.util.Log.e("AdminAlerts", "Geocoding failed", t);
+
+                    // Create alert without coordinates
+                    try {
+                        Alert alert = new Alert(alertType, severity, location, message,
+                                              createdBy, 0, 0);
+
+                        android.util.Log.d("AdminAlerts", "Saving alert without coordinates...");
+
+                        repository.createAlert(alert)
+                            .addOnSuccessListener(aVoid -> {
+                                android.util.Log.d("AdminAlerts", "Alert created without location");
+                                btnCreateAlert.setEnabled(true);
+                                Toast.makeText(requireContext(),
+                                    "✅ Alert created (location not found)",
+                                    Toast.LENGTH_SHORT).show();
+                                clearForm();
+                                loadAlerts();
+                            })
+                            .addOnFailureListener(e -> {
+                                android.util.Log.e("AdminAlerts", "Failed to create alert", e);
+                                btnCreateAlert.setEnabled(true);
+
+                                String errorMsg = e.getMessage();
+                                if (errorMsg != null && errorMsg.contains("Permission denied")) {
+                                    Toast.makeText(requireContext(),
+                                        "❌ Permission denied. Check Firebase Database Rules.",
+                                        Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(requireContext(),
+                                        "❌ Failed to create alert: " + errorMsg,
+                                        Toast.LENGTH_LONG).show();
+                                }
+                            });
+                    } catch (Exception e) {
+                        android.util.Log.e("AdminAlerts", "Exception creating alert", e);
+                        btnCreateAlert.setEnabled(true);
+                        Toast.makeText(requireContext(),
+                            "Error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
             });
     }
 
@@ -197,6 +414,8 @@ public class AdminAlertsFragment extends Fragment {
         actvSeverity.setText("");
         etAlertLocation.setText("");
         etAlertMessage.setText("");
+        alertLatitude = 0;
+        alertLongitude = 0;
     }
 
     private void updateEmptyState() {
