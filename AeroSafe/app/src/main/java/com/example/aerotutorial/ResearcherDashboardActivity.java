@@ -14,6 +14,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.aerotutorial.fragments.ResearcherDataViewFragment;
 import com.example.aerotutorial.fragments.ResearcherHubFragment;
+import com.example.aerotutorial.fragments.ResearcherNetworkFragment;
 import com.example.aerotutorial.repository.AuthRepository;
 import com.example.aerotutorial.utils.PreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -63,6 +64,9 @@ public class ResearcherDashboardActivity extends AppCompatActivity {
                 case 1:
                     tab.setText("Research Hub");
                     break;
+                case 2:
+                    tab.setText("Network");
+                    break;
             }
         }).attach();
     }
@@ -104,6 +108,8 @@ public class ResearcherDashboardActivity extends AppCompatActivity {
                     return new ResearcherDataViewFragment();
                 case 1:
                     return new ResearcherHubFragment();
+                case 2:
+                    return new ResearcherNetworkFragment();
                 default:
                     return new ResearcherDataViewFragment();
             }
@@ -111,7 +117,7 @@ public class ResearcherDashboardActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 2;
+            return 3;
         }
     }
 }

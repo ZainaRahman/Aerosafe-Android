@@ -15,6 +15,7 @@ import com.example.aerotutorial.R;
 import com.example.aerotutorial.api.RetrofitClient;
 import com.example.aerotutorial.models.AirPollutionResponse;
 import com.example.aerotutorial.models.AirQualityData;
+import com.example.aerotutorial.models.GeocodingResponse;
 import com.example.aerotutorial.repository.ResearchDataRepository;
 import com.example.aerotutorial.utils.AQICalculator;
 import com.example.aerotutorial.utils.PreferencesManager;
@@ -27,11 +28,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.Locale;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCallback {
+
+    private static final String API_KEY = "98e192f418b2437e52cb54df708958f9";
 
     private GoogleMap googleMap;
     private TextView tvSelectedLocation, tvPM25, tvPM10, tvNO2, tvO3, tvSO2, tvCO;
@@ -83,6 +90,26 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
             getChildFragmentManager().findFragmentById(R.id.mapFragment);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
+            
+            // Fix map scrolling conflict with NestedScrollView
+            if (mapFragment.getView() != null) {
+                mapFragment.getView().setOnTouchListener((v, event) -> {
+                    int action = event.getAction();
+                    switch (action) {
+                        case android.view.MotionEvent.ACTION_DOWN:
+                        case android.view.MotionEvent.ACTION_MOVE:
+                            // Disable parent scrolling when touching map
+                            v.getParent().requestDisallowInterceptTouchEvent(true);
+                            break;
+                        case android.view.MotionEvent.ACTION_UP:
+                        case android.view.MotionEvent.ACTION_CANCEL:
+                            // Re-enable parent scrolling
+                            v.getParent().requestDisallowInterceptTouchEvent(false);
+                            break;
+                    }
+                    return false;
+                });
+            }
         }
     }
 
@@ -94,6 +121,9 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         googleMap = map;
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.getUiSettings().setZoomGesturesEnabled(true);
+        googleMap.getUiSettings().setScrollGesturesEnabled(true);
 
         // Set initial position
         LatLng initialPos = new LatLng(selectedLat, selectedLon);
@@ -105,11 +135,16 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
             selectedLat = latLng.latitude;
             selectedLon = latLng.longitude;
             googleMap.clear();
-            googleMap.addMarker(new MarkerOptions().position(latLng).title("Selected Location"));
+            googleMap.addMarker(new MarkerOptions().position(latLng).title("Getting address..."));
+            
+            // Get address from coordinates
+            updateLocationFromCoordinates(latLng);
+            
+            // Fetch pollutant data
             fetchPollutantData();
         });
 
-
+        // Fetch initial data
         fetchPollutantData();
     }
 
@@ -120,20 +155,101 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
             return;
         }
 
+        tvSelectedLocation.setText("Searching...");
 
-        Toast.makeText(requireContext(), "Search: " + query, Toast.LENGTH_SHORT).show();
+        RetrofitClient.getOpenWeatherApi()
+            .geocode(query, 1, API_KEY)
+            .enqueue(new Callback<List<GeocodingResponse>>() {
+                @Override
+                public void onResponse(Call<List<com.example.aerotutorial.models.GeocodingResponse>> call,
+                                     Response<List<com.example.aerotutorial.models.GeocodingResponse>> response) {
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        com.example.aerotutorial.models.GeocodingResponse result = response.body().get(0);
+                        selectedLat = result.getLat();
+                        selectedLon = result.getLon();
+                        selectedLocation = result.getDisplayName();
+
+                        // Update map
+                        if (googleMap != null) {
+                            LatLng newPos = new LatLng(selectedLat, selectedLon);
+                            googleMap.clear();
+                            googleMap.addMarker(new MarkerOptions().position(newPos).title(selectedLocation));
+                            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPos, 10));
+                        }
+
+                        // Fetch data for new location
+                        fetchPollutantData();
+                    } else {
+                        Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show();
+                        tvSelectedLocation.setText("📍 " + selectedLocation);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<com.example.aerotutorial.models.GeocodingResponse>> call, Throwable t) {
+                    Toast.makeText(requireContext(), "Search failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    tvSelectedLocation.setText("📍 " + selectedLocation);
+                }
+            });
+    }
+
+    private void updateLocationFromCoordinates(LatLng latLng) {
+        android.util.Log.d("ResearcherDataView", "Getting address for: " + latLng.latitude + ", " + latLng.longitude);
+        android.util.Log.d("ResearcherDataView", "Using API Key: " + API_KEY);
+
+        Call<List<com.example.aerotutorial.models.GeocodingResponse>> call =
+                RetrofitClient.getOpenWeatherApi().reverseGeocode(
+                        latLng.latitude,
+                        latLng.longitude,
+                        1,
+                        API_KEY
+                );
+
+        call.enqueue(new Callback<List<com.example.aerotutorial.models.GeocodingResponse>>() {
+            @Override
+            public void onResponse(Call<List<com.example.aerotutorial.models.GeocodingResponse>> call,
+                                   Response<List<com.example.aerotutorial.models.GeocodingResponse>> response) {
+                android.util.Log.d("ResearcherDataView", "Response code: " + response.code());
+                android.util.Log.d("ResearcherDataView", "Response successful: " + response.isSuccessful());
+                
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    com.example.aerotutorial.models.GeocodingResponse result = response.body().get(0);
+                    selectedLocation = result.getDisplayName();
+                    android.util.Log.d("ResearcherDataView", "Location name: " + selectedLocation);
+                    tvSelectedLocation.setText("📍 " + selectedLocation);
+                    
+                    // Update marker with actual location name
+                    googleMap.clear();
+                    googleMap.addMarker(new MarkerOptions().position(latLng).title(selectedLocation));
+                } else {
+                    // Fallback to coordinates
+                    android.util.Log.e("ResearcherDataView", "Empty or null response body");
+                    selectedLocation = String.format(Locale.US, "%.4f, %.4f", latLng.latitude, latLng.longitude);
+                    tvSelectedLocation.setText("📍 " + selectedLocation);
+                    googleMap.clear();
+                    googleMap.addMarker(new MarkerOptions().position(latLng).title(selectedLocation));
+                    Toast.makeText(requireContext(), "Could not get address. Showing coordinates.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<com.example.aerotutorial.models.GeocodingResponse>> call, Throwable t) {
+                // Fallback to coordinates on failure
+                android.util.Log.e("ResearcherDataView", "Reverse geocoding failed: " + t.getMessage(), t);
+                selectedLocation = String.format(Locale.US, "%.4f, %.4f", latLng.latitude, latLng.longitude);
+                tvSelectedLocation.setText("📍 " + selectedLocation);
+                googleMap.clear();
+                googleMap.addMarker(new MarkerOptions().position(latLng).title(selectedLocation));
+                Toast.makeText(requireContext(), "Geocoding error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fetchPollutantData() {
         tvSelectedLocation.setText("Fetching data...");
 
-        String apiKey = prefsManager.getApiKey();
-        if (apiKey.isEmpty()) {
-            apiKey = "YOUR_API_KEY";
-        }
-
         RetrofitClient.getOpenWeatherApi()
-            .getAirPollution(selectedLat, selectedLon, apiKey)
+            .getAirPollution(selectedLat, selectedLon, API_KEY)
             .enqueue(new Callback<AirPollutionResponse>() {
                 @Override
                 public void onResponse(Call<AirPollutionResponse> call,
@@ -198,19 +314,58 @@ public class ResearcherDataViewFragment extends Fragment implements OnMapReadyCa
 
     private void saveToResearchHub() {
         if (currentData == null) {
-            Toast.makeText(requireContext(), "No data to save", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "No data to save. Please select a location first.", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Check Firebase Authentication
+        com.google.firebase.auth.FirebaseAuth firebaseAuth = com.google.firebase.auth.FirebaseAuth.getInstance();
+        com.google.firebase.auth.FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        
+        if (currentUser == null) {
+            Toast.makeText(requireContext(), "❌ Not authenticated with Firebase!\n\nPlease log out and log back in.", Toast.LENGTH_LONG).show();
+            android.util.Log.e("ResearcherDataView", "Firebase user is NULL - not authenticated!");
+            return;
+        }
+        
+        String firebaseUid = currentUser.getUid();
+        android.util.Log.d("ResearcherDataView", "Firebase UID: " + firebaseUid);
+        android.util.Log.d("ResearcherDataView", "Firebase Email: " + currentUser.getEmail());
+
         String userId = prefsManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            // Use Firebase UID if no userId in preferences
+            userId = firebaseUid;
+            android.util.Log.w("ResearcherDataView", "No userId in preferences, using Firebase UID: " + firebaseUid);
+        }
+        
+        android.util.Log.d("ResearcherDataView", "Using userId: " + userId);
+
+        Toast.makeText(requireContext(), "Saving data...", Toast.LENGTH_SHORT).show();
+        android.util.Log.d("ResearcherDataView", "Saving data for userId: " + userId + ", Location: " + currentData.getLocation());
+
         researchDataRepository.saveResearchData(currentData, userId)
             .addOnSuccessListener(aVoid -> {
-                Toast.makeText(requireContext(), "Data saved to Research Hub",
+                android.util.Log.d("ResearcherDataView", "✅ Data saved successfully to Firebase!");
+                Toast.makeText(requireContext(), "✅ Data saved to Research Hub successfully!",
                               Toast.LENGTH_SHORT).show();
             })
             .addOnFailureListener(e -> {
-                Toast.makeText(requireContext(), "Failed to save: " + e.getMessage(),
-                              Toast.LENGTH_SHORT).show();
+                String errorMsg = e.getMessage();
+                android.util.Log.e("ResearcherDataView", "❌ Save failed: " + errorMsg, e);
+                
+                if (errorMsg != null && errorMsg.contains("Permission denied")) {
+                    Toast.makeText(requireContext(), 
+                        "❌ Firebase Permission Denied!\n\n" +
+                        "Firebase User: " + (currentUser.getEmail() != null ? currentUser.getEmail() : "Unknown") + "\n" +
+                        "UID: " + firebaseUid + "\n\n" +
+                        "Rules may need 5 minutes to update after publishing.",
+                        Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(requireContext(), 
+                        "❌ Failed to save: " + errorMsg,
+                        Toast.LENGTH_LONG).show();
+                }
             });
     }
 
