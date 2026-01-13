@@ -19,10 +19,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Saved Research Data"
+            android:text="Research Hub"
             android:textColor="@color/text_primary"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRefresh"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:icon="@android:drawable/ic_menu_rotate" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnExportCSV"
@@ -32,6 +40,16 @@
             android:text="Export CSV"
             app:icon="@android:drawable/ic_menu_save" />
     </LinearLayout>
+
+    <!-- Data Count -->
+    <TextView
+        android:id="@+id/tvDataCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Loading..."
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp" />
 
     <!-- RecyclerView for Research Data -->
     <androidx.recyclerview.widget.RecyclerView
