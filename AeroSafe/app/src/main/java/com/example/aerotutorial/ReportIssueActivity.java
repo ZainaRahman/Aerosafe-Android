@@ -76,7 +76,7 @@ public class ReportIssueActivity extends AppCompatActivity {
     }
 
     private void setupDropdowns() {
-
+        // Setup Issue Type Dropdown
         String[] issueTypes = {
             "High AQI / Poor Air Quality",
             "Industrial Pollution",
@@ -92,8 +92,10 @@ public class ReportIssueActivity extends AppCompatActivity {
             issueTypes
         );
         actvIssueType.setAdapter(issueAdapter);
+        actvIssueType.setKeyListener(null); // Make it non-editable
+        actvIssueType.setOnClickListener(v -> actvIssueType.showDropDown());
 
-
+        // Setup Severity Dropdown
         String[] severityLevels = {
             "Low - Minor concern",
             "Medium - Noticeable impact",
@@ -106,6 +108,8 @@ public class ReportIssueActivity extends AppCompatActivity {
             severityLevels
         );
         actvSeverity.setAdapter(severityAdapter);
+        actvSeverity.setKeyListener(null); // Make it non-editable
+        actvSeverity.setOnClickListener(v -> actvSeverity.showDropDown());
     }
 
     private void setupListeners() {
@@ -114,6 +118,11 @@ public class ReportIssueActivity extends AppCompatActivity {
     }
 
     private void submitReport() {
+        // Clear previous errors
+        etReporterName.setError(null);
+        etLocation.setError(null);
+        etDescription.setError(null);
+
         // Get values
         String reporterName = etReporterName.getText().toString().trim();
         String location = etLocation.getText().toString().trim();
@@ -124,44 +133,55 @@ public class ReportIssueActivity extends AppCompatActivity {
         String contact = etContact.getText().toString().trim();
 
         // Validation
+        boolean isValid = true;
+
         if (reporterName.isEmpty()) {
             etReporterName.setError("Name is required");
-            etReporterName.requestFocus();
-            return;
+            if (isValid) etReporterName.requestFocus();
+            isValid = false;
         }
 
         if (location.isEmpty()) {
             etLocation.setError("Location is required");
-            etLocation.requestFocus();
-            return;
+            if (isValid) etLocation.requestFocus();
+            isValid = false;
         }
 
         if (issueType.isEmpty()) {
             actvIssueType.setError("Please select issue type");
-            actvIssueType.requestFocus();
-            return;
+            if (isValid) actvIssueType.requestFocus();
+            isValid = false;
         }
 
         if (severity.isEmpty()) {
             actvSeverity.setError("Please select severity");
-            actvSeverity.requestFocus();
-            return;
+            if (isValid) actvSeverity.requestFocus();
+            isValid = false;
         }
 
         if (description.isEmpty()) {
             etDescription.setError("Description is required");
-            etDescription.requestFocus();
+            if (isValid) etDescription.requestFocus();
+            isValid = false;
+        }
+
+        if (!isValid) {
+            Toast.makeText(this, "Please fix the errors above", Toast.LENGTH_SHORT).show();
             return;
         }
 
-
+        // Show progress
         progressBar.setVisibility(View.VISIBLE);
         btnSubmit.setEnabled(false);
+        tvStatus.setVisibility(View.GONE);
 
-
+        // Get reporter ID
         String reporterId = prefsManager.getUserId();
+        if (reporterId.isEmpty()) {
+            reporterId = "anonymous_" + System.currentTimeMillis();
+        }
 
-
+        // Create report
         Report report = new Report(
             reporterName,
             reporterId,
@@ -173,7 +193,7 @@ public class ReportIssueActivity extends AppCompatActivity {
             contact.isEmpty() ? "Not provided" : contact
         );
 
-
+        // Submit report
         repository.submitReport(report)
             .addOnSuccessListener(aVoid -> {
                 progressBar.setVisibility(View.GONE);
@@ -183,8 +203,11 @@ public class ReportIssueActivity extends AppCompatActivity {
                 tvStatus.setText("✅ Report submitted successfully! Government officials will review your report.");
                 tvStatus.setTextColor(getColor(R.color.status_success));
 
+                // Clear form after successful submission
+                clearForm();
 
-                tvStatus.postDelayed(this::finish, 2000);
+                // Auto-close after delay
+                tvStatus.postDelayed(this::finish, 3000);
             })
             .addOnFailureListener(e -> {
                 progressBar.setVisibility(View.GONE);
@@ -193,7 +216,19 @@ public class ReportIssueActivity extends AppCompatActivity {
                 tvStatus.setVisibility(View.VISIBLE);
                 tvStatus.setText("❌ Failed to submit report: " + e.getMessage());
                 tvStatus.setTextColor(getColor(R.color.status_error));
+
+                Toast.makeText(this, "Submission failed. Please try again.", Toast.LENGTH_SHORT).show();
             });
+    }
+
+    private void clearForm() {
+        etReporterName.setText("");
+        etLocation.setText("");
+        actvIssueType.setText("");
+        actvSeverity.setText("");
+        etAQIValue.setText("");
+        etDescription.setText("");
+        etContact.setText("");
     }
 }
 
